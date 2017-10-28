@@ -11,6 +11,7 @@ class CurrencyField extends Component {
         this.formatRawValue = this.formatRawValue.bind(this);
         this.parseRawValue = this.parseRawValue.bind(this);
         this.defaultConverter = this.defaultConverter.bind(this);
+        this.getProps = this.getProps.bind(this);
         this.state = {
             rawValue: this.props.value,
         };
@@ -108,11 +109,21 @@ class CurrencyField extends Component {
         const sufix = raw.slice(raw.length - precision, raw.length);
         return parseFloat(`${prefix}.${sufix}`);
     }
-
+    
+    getProps(){
+      let newProps = {};
+      for (let key in this.props) {
+        if (this.props.hasOwnProperty(key) && key !== 'delimiter' && key !== 'precision' && key !== 'separator' && key !== 'unit') {
+          newProps[key] = this.props[key];
+        }
+      }
+      return newProps;
+    }
+    
     render() {
         return (
             <TextField
-                {...this.props}
+                {...this.getProps()}
                 onChange={this.onInputType}
                 value={this.formatRawValue(this.state.rawValue)} />
         );
