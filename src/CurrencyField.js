@@ -1,7 +1,7 @@
 'use strict';
 
 import React, {Component} from 'react';
-import TextField from 'material-ui/lib/text-field';
+import TextField from 'material-ui/TextField';
 
 class CurrencyField extends Component {
 
@@ -15,6 +15,7 @@ class CurrencyField extends Component {
         this.state = {
             rawValue: this.props.value,
         };
+        
     }
 
     componentWillMount() {
@@ -23,7 +24,8 @@ class CurrencyField extends Component {
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.value) {
-            this.setState({rawValue: nextProps.value});
+            let value = parseFloat(nextProps.value).toFixed(this.props.precision);
+            this.setState({rawValue: this.parseRawValue(value)});
         }
     }
 
@@ -47,14 +49,14 @@ class CurrencyField extends Component {
     }
 
     parseRawValue(displayedValue) {
-        const value = displayedValue.replace(/[^0-9]/g, '');
-
-        return parseFloat(value);
+        let value = `${displayedValue}`
+        value = value.replace(/[^0-9]/g, '').replace('.','');
+        return Number(value);
     }
 
     formatRawValue(rawValue) {
+        if(!rawValue) return '';
         const minChars = '0'.length + this.props.precision;
-
         let result = `${rawValue}`;
 
         if (result.length < minChars) {
@@ -65,6 +67,7 @@ class CurrencyField extends Component {
 
         let beforeSeparator = result.slice(0, result.length - this.props.precision);
         const afterSeparator = result.slice(result.length - this.props.precision);
+        
 
         if (beforeSeparator.length > 3) {
             const chars = beforeSeparator.split('').reverse();
@@ -79,6 +82,7 @@ class CurrencyField extends Component {
             withDots = withDots.substring(0, withDots.length - 1);
             beforeSeparator = withDots;
         }
+        
 
         result = beforeSeparator + this.props.separator + afterSeparator;
 
@@ -91,6 +95,10 @@ class CurrencyField extends Component {
 
     defaultConverter(val) {
         const {precision} = this.props;
+        if(!val){
+            return val;
+        }
+
         const raw = val.toString();
 
         if (Number.isNaN(parseFloat(raw))) {
@@ -102,14 +110,17 @@ class CurrencyField extends Component {
         }
 
         if (precision >= raw.length) {
-            return parseFloat(raw);
+            const numbers = precision - raw.length;
+            const leftZeroPad = new String(0).repeat(numbers);
+            let result = `0.${leftZeroPad}${raw}`;
+            return parseFloat(result);
         }
 
         const prefix = raw.slice(0, raw.length - precision);
         const sufix = raw.slice(raw.length - precision, raw.length);
         return parseFloat(`${prefix}.${sufix}`);
     }
-    
+
     getProps(){
       let newProps = {};
       for (let key in this.props) {
@@ -119,7 +130,7 @@ class CurrencyField extends Component {
       }
       return newProps;
     }
-    
+
     render() {
         return (
             <TextField
